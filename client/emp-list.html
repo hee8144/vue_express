@@ -12,6 +12,7 @@
             border-collapse:collapse ;
             padding: 5px 10px;
             text-align: center;
+            margin-top: 20px;
         }
         th{
             background-color: beige;
@@ -19,14 +20,29 @@
         tr:nth-child(even){
             background-color: azure;
         }
+        #dept-menu{
+            margin-top: 20px;
+            text-align: center;
+            height: 30px;
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <!-- html 코드는 id가 app인 태그안에서 작업 -->
+        <div>
+            <select v-model="deptNo" id="dept-menu" @change="fnEmpList">
+                <option value="">:: 전체 ::</option>
+                <option value="10">:: ACCOUNTING ::</option>
+                <option value="20">:: RESEARCH ::</option>
+                <option value="30">:: SALES ::</option>
+                <option value="40">:: OPERATIONS ::</option>
+            </select>
+        </div>
 
         <table>
             <tr>
+                <th>선택</th>
                 <th>사번</th>
                 <th>이름</th>
                 <th>직책</th>
@@ -36,8 +52,11 @@
                 <th>삭제</th>
             </tr>
             <tr v-for="item in list">
+                <td><input type="checkbox" :value="item.EMPNO" v-model="selectItems"></td>
                 <td>{{item.EMPNO}}</td>
-                <td>{{item.ENAME}}</td>
+                <td>
+                    <a href="javascript:;" @click="fnView(item.EMPNO)">{{item.ENAME}}</a>
+                </td>
                 <td>{{item.JOB}}</td>
                 <td>{{item.SAL}}</td>
                 <td>{{item.DNAME}}</td>
@@ -53,6 +72,9 @@
                 추가
             </button>
         </a>
+            <button @click="fnRemoveAll">
+                선택삭제
+            </button>
         
     </div>
 </body>
@@ -64,7 +86,9 @@
             return {
                 // 변수 - (key : value)
                 // COMM ,DEPTNO,EMPNO,ENAME,HIREDATE,JOB,MGR,SAL
-                list:[]
+                list:[],
+                deptNo:"",
+                selectItems:[]
             };
         },
         methods: {
@@ -75,7 +99,7 @@
                     url: "http://localhost:3009/emp/list",
                     dataType: "json",
                     type: "GET",
-                    data: {},
+                    data: {deptNo : self.deptNo},
                     success: function (data) {
                         console.log(data.list);
                         self.list = data.list;
@@ -103,6 +127,30 @@
             },
             fnEdit(empNo){
                 location.href=`emp-edit.html?empNo=${empNo}`
+            },
+            fnView(empNo){
+                window.open(`emp-view.html?empNo=${empNo}`,"view","widtt=500,height=500");
+            },
+            fnRemoveAll(){
+                let self=this;
+
+                if(!confirm("삭제하시겠습니까?")){
+                    return ;
+                }
+                
+                $.ajax({
+                    url: "http://localhost:3009/emp/deleteAll",
+                    dataType: "json",
+                    type: "GET",
+                    data: {removeList : self.selectItems},
+                    traditional:true,
+                    success: function (data) {
+                        if(data.result == "success"){
+                            alert("삭제되었습니다.");   
+                            self.fnEmpList();
+                        }
+                    }
+                });
             }
         }, // methods
         mounted() {

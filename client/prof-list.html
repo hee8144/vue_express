@@ -19,29 +19,47 @@
         tr:nth-child(even){
             background-color: azure;
         }
+        #Position-menu{
+            margin: 20px 0px;
+            text-align: center;
+            height: 30px;
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <!-- html 코드는 id가 app인 태그안에서 작업 -->
 
+        <div>
+            <select v-model="Position" id="Position-menu" @change="fnProfList">
+                <option value="">:: 전체 ::</option>
+                <option value="정교수">:: 정교수 ::</option>
+                <option value="조교수">:: 조교수 ::</option>
+                <option value="전임강사">:: 전임강사 ::</option>
+            </select>
+        </div>
+
         <table>
             <tr>
+                <th>선택</th>
                 <th>교수번호</th>
                 <th>이름</th>
                 <th>아이디</th>
                 <th>직급</th>
                 <th>급여</th>
                 <th>삭제</th>
+                <th>수정</th>
             </tr>
 
             <tr v-for="item in list">
+                <td><input type="checkbox" :value="item.PROFNO" v-model="selectItems"></td>
                 <td>{{item.PROFNO}}</td>
                 <td>{{item.NAME}}</td>
                 <td>{{item.ID}}</td>
                 <td>{{item.POSITION}}</td>
                 <td>{{item.PAY}}</td>
                 <td><button @click="fnRemove(item.PROFNO)">삭제</button></td>
+                <td><button @click="fnEdit(item.PROFNO)">수정</button></td>
             </tr>
         </table>
     </div>
@@ -53,15 +71,16 @@
         data() {
             return {
                 // 변수 - (key : value)
-                list:[]
-
+                list:[],
+                Position :"",
+                selectItems:[]
             };
         },
         methods: {
             // 함수(메소드) - (key : function())
             fnProfList: function () {
                 let self = this;
-                let param={};
+                let param={Position : self.Position};
                 $.ajax({
                     url: "http://localhost:3009/prof/list",
                     dataType: "json",
@@ -84,6 +103,29 @@
                     dataType: "json",
                     type: "GET",
                     data: param,
+                    success: function (data) {
+                        if(data.result=="success"){
+                            alert("삭제완료");
+                            self.fnProfList();
+                        }
+                    }
+                });
+            },
+            fnEdit(profNo){
+                location.href="prof-edit.html?profNo="+profNo;
+            },
+            fnRemoveAll(){
+                 if(!confirm("삭제하시겠습니까?")){
+                    return;
+                }
+                
+                let param={profNo : profNo};
+                $.ajax({
+                    url: "http://localhost:3009/prof/deleteAll",
+                    dataType: "json",
+                    type: "GET",
+                    data: {removeList:self.selectItems },
+                    traditional:true,
                     success: function (data) {
                         if(data.result=="success"){
                             alert("삭제완료");

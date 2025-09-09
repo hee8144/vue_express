@@ -33,16 +33,16 @@
 <body>
     <div id="app">
         <!-- html 코드는 id가 app인 태그안에서 작업 -->
-         <table>
+          <table>
             <tr>
-                <th>사번</th>
+                <th>교수번호</th>
                 <td >
-                    <span v-if="empNo !=''">
-                        <input type="text" v-model="info.empNo" disabled>
+                    <span v-if="this.info.profNo">
+                        <input type="text" v-model="info.profNo" disabled>
                         <button class="check-btn" disabled>중복체크</button>
                     </span>
                     <span v-else>
-                        <input type="text" v-model="info.empNo">
+                        <input type="text" v-model="info.profNo">
                         <button class="check-btn">중복체크</button>
                     </span>
                 </td>
@@ -50,26 +50,29 @@
 
             <tr>
                 <th>이름</th>
-                <td><input type="text" v-model="info.eName"></td>
+                <td><input type="text" v-model="info.Name"></td>
             </tr>
 
             <tr>
-                <th>직책</th>
-                <td><input type="text" v-model="info.Job"></td>
+                <th>아이디</th>
+                <td><input type="text" v-model="info.Id"></td>
             </tr>
 
             <tr>
-                <th>부서</th>
+                <th>직급</th>
                 <td>
-                    <label for=""><input type="radio" value="10" v-model="info.selectDept">ACCOUNTING</label>
-                    <label for=""><input type="radio" value="20" v-model="info.selectDept">RESEARCH</label>
-                    <label for=""><input type="radio" value="30" v-model="info.selectDept">SALES</label>
-                    <label for=""><input type="radio" value="40" v-model="info.selectDept">OPERATIONS</label>
+                    <label for=""><input type="radio" value="정교수" v-model="info.selectPosition">정교수</label>
+                    <label for=""><input type="radio" value="조교수" v-model="info.selectPosition">조교수</label>
+                    <label for=""><input type="radio" value="전임강사" v-model="info.selectPosition">전임강사</label>
                 </td>
+            </tr>
+            <tr>
+                <th>급여</th>
+                <td><input type="text" v-model="info.Pay"></td>
             </tr>
          </table>
          <div>
-                <button @click="fnAdd" v-if="empNo == ''">추가</button>
+                <button @click="fnAdd" v-if="profNo == ''">추가</button>
                 <button @click="fnEdit" v-else>수정</button>
          </div>
 
@@ -82,69 +85,58 @@
         data() {
             return {
                 // 변수 - (key : value)
-                // EMP- COMM ,DEPTNO,EMPNO,ENAME,HIREDATE,JOB,MGR,SAL
-                info:{},
-                empNo:"",
+                profNo:"",
+                info:{}
+                
             };
         },
         methods: {
             // 함수(메소드) - (key : function())
-            fnAdd: function () {
+            fnList: function () {
                 let self = this;
-                
-                if(self.info.empNo.length !=4){
-                    alert("사번은 4글자 입니다.");
-                    return;
-                }
+                let param={};
                 $.ajax({
-                    url: "http://localhost:3009/emp/insert",
+                    url: "http://localhost:3009/prof/info",
                     dataType: "json",
                     type: "GET",
-                    data: self.info,
+                    data: {profNo : self.profNo},
                     success: function (data) {
-                        alert("추가되었습니다.");
-                        location.href="emp-list.html"
-                    }
-                });
-            },
-            fnInfo() {
-                let self = this;
-                
-                $.ajax({
-                    url: "http://localhost:3009/emp/info",
-                    dataType: "json",
-                    type: "GET",
-                    data: {empNo : self.empNo},
-                    success: function (data) {
-                        self.info=data.info;
-                        console.log(data);
+                        self.info  = data.profInfo[0];
+                        console.log(self.info);
                         
                     }
                 });
             },
+            fnAdd(){
+
+            },
             fnEdit(){
-                let self =this;
-               
+                let self = this;
+                let param={
+                };
                 $.ajax({
-                    url: "http://localhost:3009/emp/update",
+                    url: "http://localhost:3009/prof/update",
                     dataType: "json",
                     type: "GET",
                     data: self.info,
                     success: function (data) {
                         alert("수정되었습니다.");
-                        location.href="emp-list.html"
+                        location.href="prof-list.html"
                     }
                 });
             }
+            
         }, // methods
         mounted() {
             // 처음 시작할 때 실행되는 부분
             let self = this;
-            const queryParams= new URLSearchParams(window.location.search);
-            self.empNo =  queryParams.get('empNo') || '';
-            if(self.empNo!=""){
-                self.fnInfo()
+            const queryParams = new URLSearchParams(window.location.search);
+            self.profNo = queryParams.get("profNo") || "";
+            console.log(self.profNo);
+            if(self.profNo!=""){
+                self.fnList();
             }
+
         }
     });
 
