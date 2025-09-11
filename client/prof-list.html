@@ -24,6 +24,10 @@
             text-align: center;
             height: 30px;
         }
+        .index{
+            margin-right: 10px;
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
@@ -62,6 +66,10 @@
                 <td><button @click="fnEdit(item.PROFNO)">수정</button></td>
             </tr>
         </table>
+        <a class="index" v-for="num in index" @click="page = num">
+            <span v-if="num == page" style="color:blue; font-weight: bold;" >{{num}}</span>
+            <span v-else>{{num}}</span>
+        </a>
     </div>
 </body>
 </html>
@@ -73,7 +81,10 @@
                 // 변수 - (key : value)
                 list:[],
                 Position :"",
-                selectItems:[]
+                selectItems:[],
+                index: 0,
+                page:1,
+                pageSize:5
             };
         },
         methods: {
@@ -88,6 +99,8 @@
                     data: param,
                     success: function (data) {
                         self.list = data.profList;
+                        self.index = Math.ceil(data.count/self.pageSize);
+                        
                     }
                 });
             },
